@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/core/log.h"
+#include "esphome/core/automation.h"
 #include "esphome/components/i2c/i2c.h"
 
 namespace esphome {
@@ -12,8 +13,10 @@ class Waveshare4BLcdInit : public Component, public i2c::I2CDevice {
   void setup() override;
   void dump_config() override;
 
+  void set_backlight(bool on);
+
   float get_setup_priority() const override {
-    // Ma wystartować przed display.mipi_rgb.
+    // Start przed display.mipi_rgb.
     return 850.0f;
   }
 
@@ -29,11 +32,29 @@ class Waveshare4BLcdInit : public Component, public i2c::I2CDevice {
 
   void spi_delay_();
   void spi_write9_(bool is_data, uint8_t value);
+
   void lcd_cmd_(uint8_t cmd);
   void lcd_data_(uint8_t data);
   void lcd_cmd_data_(uint8_t cmd, const uint8_t *data, size_t len);
 
   void st7701_init_();
+};
+
+template<typename... Ts> class SetBacklightAction : public Action<Ts...> {
+ public:
+  explicit SetBacklightAction(Waveshare4BLcdInit *parent) : parent_(parent) {}
+
+  void set_backlight(bool backlight) {
+    this->backlight_ = backlight;
+  }
+
+  void play(Ts... x) override {
+    this->parent_->set_backlight(this->backlight_);
+  }
+
+ protected:
+  Waveshare4BLcdInit *parent_;
+  bool backlight_{true};
 };
 
 }  // namespace waveshare_4b_lcd_init
