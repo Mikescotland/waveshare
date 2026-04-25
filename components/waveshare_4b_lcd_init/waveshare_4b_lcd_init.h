@@ -14,6 +14,7 @@ class Waveshare4BLcdInit : public Component, public i2c::I2CDevice {
   void dump_config() override;
 
   void set_backlight(bool on);
+  void set_expander_pin(uint8_t pin, bool state);
 
   float get_setup_priority() const override {
     // Start przed display.mipi_rgb.
@@ -40,6 +41,7 @@ class Waveshare4BLcdInit : public Component, public i2c::I2CDevice {
   void st7701_init_();
 };
 
+
 template<typename... Ts> class SetBacklightAction : public Action<Ts...> {
  public:
   explicit SetBacklightAction(Waveshare4BLcdInit *parent) : parent_(parent) {}
@@ -55,6 +57,29 @@ template<typename... Ts> class SetBacklightAction : public Action<Ts...> {
  protected:
   Waveshare4BLcdInit *parent_;
   bool backlight_{true};
+};
+
+
+template<typename... Ts> class SetExpanderPinAction : public Action<Ts...> {
+ public:
+  explicit SetExpanderPinAction(Waveshare4BLcdInit *parent) : parent_(parent) {}
+
+  void set_pin(uint8_t pin) {
+    this->pin_ = pin;
+  }
+
+  void set_state(bool state) {
+    this->state_ = state;
+  }
+
+  void play(Ts... x) override {
+    this->parent_->set_expander_pin(this->pin_, this->state_);
+  }
+
+ protected:
+  Waveshare4BLcdInit *parent_;
+  uint8_t pin_{0};
+  bool state_{false};
 };
 
 }  // namespace waveshare_4b_lcd_init
