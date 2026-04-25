@@ -19,7 +19,14 @@ SetBacklightAction = waveshare_ns.class_(
     automation.Action,
 )
 
+SetExpanderPinAction = waveshare_ns.class_(
+    "SetExpanderPinAction",
+    automation.Action,
+)
+
 CONF_BACKLIGHT = "backlight"
+CONF_PIN = "pin"
+CONF_STATE = "state"
 
 CONFIG_SCHEMA = (
     cv.Schema(
@@ -52,4 +59,23 @@ async def set_backlight_to_code(config, action_id, template_arg, args):
     parent = await cg.get_variable(config[CONF_ID])
     var = cg.new_Pvariable(action_id, template_arg, parent)
     cg.add(var.set_backlight(config[CONF_BACKLIGHT]))
+    return var
+
+
+@automation.register_action(
+    "waveshare_4b_lcd_init.set_expander_pin",
+    SetExpanderPinAction,
+    cv.Schema(
+        {
+            cv.Required(CONF_ID): cv.use_id(Waveshare4BLcdInit),
+            cv.Required(CONF_PIN): cv.int_range(min=0, max=7),
+            cv.Required(CONF_STATE): cv.boolean,
+        }
+    ),
+)
+async def set_expander_pin_to_code(config, action_id, template_arg, args):
+    parent = await cg.get_variable(config[CONF_ID])
+    var = cg.new_Pvariable(action_id, template_arg, parent)
+    cg.add(var.set_pin(config[CONF_PIN]))
+    cg.add(var.set_state(config[CONF_STATE]))
     return var
