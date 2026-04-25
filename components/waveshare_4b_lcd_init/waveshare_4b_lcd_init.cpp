@@ -47,9 +47,23 @@ void Waveshare4BLcdInit::pca_set_pin_(uint8_t pin, bool value) {
 void Waveshare4BLcdInit::set_backlight(bool on) {
   ESP_LOGI(TAG, "Backlight %s", on ? "ON" : "OFF");
 
-  // Na tej płytce pin wygląda na aktywne LOW,
-  // bo w przykładzie Arduino pin 6 ustawiony LOW włączał ekran/backlight.
+  // To NIE jest pełna regulacja jasności.
+  // Na tej płytce GPIO4 daje PWM jasności, a pin 6 ekspandera pomaga przy power/init.
+  // Zostawione jako akcja testowa.
+  this->pca_pin_mode_output_(PIN_LCD_PWR);
   this->pca_set_pin_(PIN_LCD_PWR, !on);
+}
+
+void Waveshare4BLcdInit::set_expander_pin(uint8_t pin, bool state) {
+  if (pin > 7) {
+    ESP_LOGW(TAG, "Invalid expander pin %u", pin);
+    return;
+  }
+
+  ESP_LOGI(TAG, "Set expander pin %u to %s", pin, state ? "HIGH" : "LOW");
+
+  this->pca_pin_mode_output_(pin);
+  this->pca_set_pin_(pin, state);
 }
 
 void Waveshare4BLcdInit::spi_delay_() {
@@ -62,16 +76,20 @@ void Waveshare4BLcdInit::spi_write9_(bool is_data, uint8_t value) {
 
   this->pca_set_pin_(PIN_SDA, is_data);
   this->spi_delay_();
+
   this->pca_set_pin_(PIN_SCL, true);
   this->spi_delay_();
+
   this->pca_set_pin_(PIN_SCL, false);
   this->spi_delay_();
 
   for (int bit = 7; bit >= 0; bit--) {
     this->pca_set_pin_(PIN_SDA, (value >> bit) & 0x01);
     this->spi_delay_();
+
     this->pca_set_pin_(PIN_SCL, true);
     this->spi_delay_();
+
     this->pca_set_pin_(PIN_SCL, false);
     this->spi_delay_();
   }
