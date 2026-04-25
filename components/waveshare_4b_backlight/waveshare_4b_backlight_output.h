@@ -29,7 +29,7 @@ class Waveshare4BBacklightOutput : public Component, public output::FloatOutput 
   static constexpr ledc_timer_t LEDC_TIMER = LEDC_TIMER_1;
   static constexpr ledc_channel_t LEDC_CHANNEL = LEDC_CHANNEL_1;
 
-  static constexpr uint32_t LEDC_FREQ_HZ = 5000;
+  static constexpr uint32_t LEDC_FREQ_HZ = 30000;
   static constexpr ledc_timer_bit_t LEDC_RESOLUTION = LEDC_TIMER_10_BIT;
   static constexpr uint32_t LEDC_MAX_DUTY = 1023;
 
